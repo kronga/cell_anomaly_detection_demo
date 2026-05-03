@@ -1,0 +1,9 @@
+column,n_unique,top_value,top_count,top_ratio
+cell_id,5880,CELL_000861,1,0.00017006802721088434
+cell_type,19,Neutrophil,1100,0.1870748299319728
+disease_category,8,Normal_WBC,2800,0.47619047619047616
+patient_age_group,3,Adult,3276,0.5571428571428572
+patient_sex,2,F,2966,0.504421768707483
+dataset_source,3,PBC_Dataset,2351,0.3998299319727891
+staining_protocol,3,Giemsa,2627,0.4467687074829932
+microscope_model,3,Olympus_BX51,2398,0.40782312925170067

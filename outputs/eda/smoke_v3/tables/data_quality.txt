@@ -1,0 +1,6 @@
+rows=5880
+columns=36
+total_missing=0
+duplicate_rows=0
+numeric_columns=28
+categorical_columns=8
