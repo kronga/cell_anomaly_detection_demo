@@ -9,7 +9,14 @@ from config import MAIN_DATA_PATH, REFERENCE_DATA_PATH
 from utils import resolve_output_dir
 
 
-def run_step(script_path: Path, main_csv: Path, reference_csv: Path, output_dir: Path, style: str) -> None:
+def run_step(
+    script_path: Path,
+    main_csv: Path,
+    reference_csv: Path,
+    output_dir: Path,
+    style: str,
+    extra_args: list[str] | None = None,
+) -> None:
     cmd = [
         sys.executable,
         str(script_path),
@@ -22,6 +29,8 @@ def run_step(script_path: Path, main_csv: Path, reference_csv: Path, output_dir:
         "--style",
         style,
     ]
+    if extra_args:
+        cmd.extend(extra_args)
     print(f"Running: {' '.join(cmd)}")
     subprocess.run(cmd, check=True)
 
@@ -37,6 +46,19 @@ def main() -> None:
         help="Output directory for this run. If omitted, a timestamped folder is created.",
     )
     parser.add_argument("--style", type=str, default="whitegrid", help="Seaborn style.")
+    parser.add_argument(
+        "--include-modeling",
+        action="store_true",
+        help="Also run 04_modeling.py after the EDA stages.",
+    )
+    parser.add_argument("--test-size", type=float, default=0.2, help="Modeling holdout test size.")
+    parser.add_argument("--random-state", type=int, default=42, help="Modeling random state.")
+    parser.add_argument(
+        "--shap-sample-size",
+        type=int,
+        default=400,
+        help="Max holdout rows used for SHAP plotting in 04_modeling.py.",
+    )
     args = parser.parse_args()
 
     output_dir = resolve_output_dir(args.output_dir)
@@ -49,6 +71,23 @@ def main() -> None:
 
     for script in scripts:
         run_step(script, args.main_csv, args.reference_csv, output_dir, args.style)
+
+    if args.include_modeling:
+        run_step(
+            script_dir / "04_modeling.py",
+            args.main_csv,
+            args.reference_csv,
+            output_dir,
+            args.style,
+            extra_args=[
+                "--test-size",
+                str(args.test_size),
+                "--random-state",
+                str(args.random_state),
+                "--shap-sample-size",
+                str(args.shap_sample_size),
+            ],
+        )
 
     print(f"EDA complete. Artifacts saved under: {output_dir}")
 
