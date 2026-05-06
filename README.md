@@ -1,94 +1,96 @@
 # cell_anomaly_detection_demo
 
-Script-based EDA workflow for blood cell anomaly data.
+This repository provides a complete workflow for blood-cell data analysis:
+1. Scripted EDA (tables + figures),
+2. Disease-category model training and comparison,
+3. SHAP-based feature importance,
+4. Interactive localhost web app for exploration and prediction.
 
-## Data
+## 1. Repository purpose
 
-- `cell_anomaly_dataset/blood_cell_anomaly_detection.csv`
-- `cell_anomaly_dataset/cell_type_reference.csv`
+Use this project to:
+- Explore the dataset structure and class behavior.
+- Train and compare classification models for `disease_category`.
+- Inspect model performance and feature importance.
+- Interactively explore EDA and 3D PCA in a web interface.
 
-## EDA scripts
+## 2. Data files
+
+- `cell_anomaly_dataset/blood_cell_anomaly_detection.csv` (main dataset)
+- `cell_anomaly_dataset/cell_type_reference.csv` (reference metadata)
+
+## 3. Project structure
 
 - `eda/01_overview.py` - schema, quality checks, summary tables
 - `eda/02_univariate_figures.py` - univariate distributions and category plots
-- `eda/03_bivariate_figures.py` - correlations, feature-vs-target plots, and PCA plots
-- `eda/04_modeling.py` - disease-category train/test modeling, model comparison, SHAP, and summary report
-- `eda/run_eda.py` - runs the full pipeline end-to-end
+- `eda/03_bivariate_figures.py` - correlations, feature-vs-target plots, PCA figures
+- `eda/04_modeling.py` - train/test modeling, model comparison, SHAP, `summary.md`
+- `eda/run_eda.py` - orchestrator for full pipeline
+- `webapp/app.py` - Streamlit web app (EDA + PCA + model results + prediction UI)
 
-## Run
+## 4. Installation
 
 From repository root:
-
-```bash
-python eda/run_eda.py
-```
-
-Optional explicit paths/output directory:
-
-```bash
-python eda/run_eda.py \
-  --main-csv cell_anomaly_dataset/blood_cell_anomaly_detection.csv \
-  --reference-csv cell_anomaly_dataset/cell_type_reference.csv \
-  --output-dir outputs/eda/manual_run
-```
-
-Run individual stages:
-
-```bash
-python eda/01_overview.py
-python eda/02_univariate_figures.py
-python eda/03_bivariate_figures.py
-python eda/04_modeling.py
-```
-
-Run EDA + modeling in one command:
-
-```bash
-python eda/run_eda.py --include-modeling
-```
-
-## Interactive website (localhost)
-
-Install Streamlit if needed:
 
 ```bash
 python -m pip install streamlit plotly
 ```
 
-Run the web app:
+If your environment is missing ML/EDA libraries, install the standard stack used by the scripts (`pandas`, `numpy`, `matplotlib`, `seaborn`, `scikit-learn`, `shap`).
+
+## 5. Run the analysis pipeline
+
+Run EDA only:
+
+```bash
+python eda/run_eda.py
+```
+
+Run EDA + modeling:
+
+```bash
+python eda/run_eda.py --include-modeling
+```
+
+Run with explicit paths/output:
+
+```bash
+python eda/run_eda.py \
+  --main-csv cell_anomaly_dataset/blood_cell_anomaly_detection.csv \
+  --reference-csv cell_anomaly_dataset/cell_type_reference.csv \
+  --output-dir outputs/eda/manual_run \
+  --include-modeling
+```
+
+## 6. Run the localhost web app
+
+Start the app:
 
 ```bash
 streamlit run webapp/app.py
 ```
 
-If the Predict tab is empty initially, click **Train models now** in the sidebar (or **Train models for Predict tab** inside the tab).
+Open the URL printed by Streamlit (usually `http://localhost:8501`).
 
-The website includes:
-- **EDA Explorer**: interactive distribution, scatter, and pivot analysis.
-- **PCA 3D Explorer**: interactive 3D PCA with selectable PC axes, selectable color label, and built-in zoom/rotate/pan.
-- **Modeling Results**: view generated run summaries/figures from `outputs/eda/*`.
-- **Predict**: enter feature values and get disease-category prediction + probabilities.
+App tabs:
+- **EDA Explorer**: interactive distributions, scatter plots, pivot tables.
+- **PCA 3D Explorer**: choose X/Y/Z principal components, choose color label, zoom/rotate/pan.
+- **Modeling Results**: loads saved run artifacts from `outputs/eda/*`.
+- **Predict**: enter feature values and get disease-category probabilities.
 
-## Outputs
+If Predict is empty at first, click **Train models now** in the sidebar.
 
-By default each run creates `outputs/eda/<timestamp>/` with:
+## 7. Output artifacts
 
-- `tables/` for CSV/TXT summaries
-- `figures/univariate/` for univariate plots
-- `figures/bivariate/` for bivariate plots
-- `figures/univariate/aggregated/` for large multi-subplot comparison pages
-- `figures/bivariate/aggregated/` for large multi-subplot Normal vs Anomaly violin comparisons
-- `figures/bivariate/pca/` for PCA projections colored by:
-  - `anomaly_group` (Normal vs Anomaly)
-  - `cell_type`
-  - `disease_category`
-  - `dataset_source`
-  - `patient_age_group`
-  - `patient_sex`
-- `tables/modeling/` for model metrics, confusion matrices, reports, and SHAP feature importance
-- `figures/modeling/` for model comparison, best confusion matrix, and SHAP figures
-- `summary.md` with main modeling figures and concise analysis
+Each run writes to `outputs/eda/<timestamp>/` (or your custom `--output-dir`), including:
+- `tables/` and `figures/` from EDA
+- `tables/modeling/` and `figures/modeling/` from model evaluation + SHAP
+- `summary.md` with main modeling figures and findings
 
-Class color convention is fixed across comparison plots:
-- **Normal**: blue (`#1f77b4`)
-- **Anomaly**: salmon pink (`#FA8072`)
+## 8. Notes
+
+- Current modeling target is `disease_category` (multiclass).
+- The modeling stage excludes leakage-prone/non-generalizable columns before training.
+- Class color convention in comparison plots:
+  - **Normal**: `#1f77b4`
+  - **Anomaly**: `#FA8072`
